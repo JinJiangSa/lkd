@@ -1,5 +1,7 @@
 package com.lkd;
 
+import com.lkd.feign.UserService;
+import com.lkd.feign.VMService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

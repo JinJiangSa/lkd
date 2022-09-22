@@ -39,6 +39,9 @@ public class JwtTokenFilter implements GlobalFilter, Ordered{
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String url = exchange.getRequest().getURI().getPath();
         //跳过不需要验证的路径
+        // anyMatch：判断的条件里，任意一个元素成功，返回true
+        // allMatch：判断条件里的元素，所有的都是，返回true
+        // noneMatch：与allMatch相反，判断条件里的元素，所有的都不是，返回true
         boolean matchUrl = Arrays.stream(gatewayConfig.getUrls())
                 .anyMatch(url::contains);
         if(matchUrl){
@@ -47,6 +50,8 @@ public class JwtTokenFilter implements GlobalFilter, Ordered{
         if(null != gatewayConfig.getUrls()&& Arrays.asList(gatewayConfig.getUrls()).contains(url)){
             return chain.filter(exchange);
         }
+
+        //获取token
         String token = exchange.getRequest().getHeaders().getFirst("Authorization");
         ServerHttpResponse resp = exchange.getResponse();
         if(Strings.isNullOrEmpty(token)) return authError(resp);

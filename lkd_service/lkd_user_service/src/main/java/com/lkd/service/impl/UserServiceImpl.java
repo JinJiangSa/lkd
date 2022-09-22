@@ -5,8 +5,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.base.Strings;
 import com.lkd.common.VMSystem;
+import com.lkd.dao.RoleDao;
 import com.lkd.dao.UserDao;
 import com.lkd.entity.UserEntity;
+import com.lkd.feign.TaskService;
 import com.lkd.http.view.TokenObject;
 import com.lkd.http.vo.LoginReq;
 import com.lkd.http.vo.LoginResp;
@@ -17,6 +19,7 @@ import com.lkd.utils.BCrypt;
 import com.lkd.utils.JWTUtil;
 import com.lkd.vo.Pager;
 import com.lkd.vo.UserVO;
+import com.lkd.vo.UserWorkVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +28,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -32,14 +38,26 @@ import java.util.stream.Stream;
 
 @Service
 @Slf4j
-public class UserServiceImpl extends ServiceImpl<UserDao,UserEntity> implements UserService{
+public class UserServiceImpl extends ServiceImpl<UserDao, UserEntity> implements UserService{
+
     @Autowired
     private RedisTemplate<String,String> redisTemplate;
+
     @Autowired
     private PartnerService partnerService;
 
     @Autowired
     private SmsSender smsSender;
+
+    @Autowired
+    private TaskService taskService;
+
+    @Autowired
+    private UserDao userDao;
+
+    @Autowired
+    private RoleDao roleDao;
+
     @Override
     public Integer getOperatorCount() {
         LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
@@ -268,4 +286,38 @@ public class UserServiceImpl extends ServiceImpl<UserDao,UserEntity> implements 
         return okResp( userEntity,VMSystem.LOGIN_EMP );
     }
 
+    @Override
+    public Pager<UserWorkVO> searchUserWork(Long pageIndex, Long pageSize, String userName, Integer roleId, Boolean isRepair) {
+        LocalDate date = LocalDate.now();
+        String firstDay = date.with(TemporalAdjusters.firstDayOfMonth()).toString(); // 获取当前月的第一天
+        String lastDay = date.with(TemporalAdjusters.lastDayOfMonth()).toString(); // 获取当前月的最后一天
+        Pager<UserEntity> page = this.findPage(pageIndex, pageSize, userName, roleId, isRepair);
+        List<UserEntity> currentPageRecords = page.getCurrentPageRecords();
+        /*List<UserWorkVO> userWorkVOList = currentPageRecords.stream().map(item -> {
+            UserWorkVO userWorkVO = taskService.userWork(item.getId(), firstDay, lastDay);
+            userWorkVO.setUserName(item.getUserName());
+            userWorkVO.setRoleName(item.getRole().getRoleName());
+            userWorkVO.setMobile(item.getMobile());
+            return userWorkVO;
+        }).collect(Collectors.toList());*/
+
+        List<UserWorkVO> userWorkVOList = new ArrayList<>();
+        for (UserEntity userEntity : currentPageRecords) {
+            UserWorkVO userWorkVO = taskService.userWork(userEntity.getId(), firstDay, lastDay);
+            userWorkVO.setUserName(userEntity.getUserName());
+            userWorkVO.setRoleName(userEntity.getRole().getRoleName());
+            userWorkVO.setMobile(userEntity.getMobile());
+            userWorkVOList.add(userWorkVO);
+        }
+
+
+        Pager<UserWorkVO> pageInfo = new Pager<>();
+        pageInfo.setCurrentPageRecords(userWorkVOList);
+        pageInfo.setPageIndex(page.getPageIndex());
+        pageInfo.setPageSize(page.getPageSize());
+        pageInfo.setTotalPage(page.getTotalPage());
+        pageInfo.setTotalCount(page.getTotalCount());
+
+        return pageInfo;
+    }
 }

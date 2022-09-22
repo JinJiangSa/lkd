@@ -6,6 +6,7 @@ import com.lkd.http.vo.LoginReq;
 import com.lkd.http.vo.LoginResp;
 import com.lkd.vo.Pager;
 import com.lkd.vo.UserVO;
+import com.lkd.vo.UserWorkVO;
 
 import java.io.IOException;
 import java.util.List;
@@ -64,4 +65,15 @@ public interface UserService extends IService<UserEntity> {
      * @return
      */
     Integer getCountByRegion(Long regionId,Boolean isRepair);
+
+    /**
+     * 人员工作量列表
+     * @param pageIndex
+     * @param pageSize
+     * @param userName
+     * @param roleId
+     * @param isRepair
+     * @return
+     */
+    Pager<UserWorkVO> searchUserWork(Long pageIndex, Long pageSize, String userName, Integer roleId, Boolean isRepair);
 }

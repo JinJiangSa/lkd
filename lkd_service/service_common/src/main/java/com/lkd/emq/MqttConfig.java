@@ -52,7 +52,7 @@ public class MqttConfig {
         }
     }
 
-    @Bean
+    // @Bean
     public MqttConnectOptions mqttConnectOptions() {
         MqttConnectOptions options = new MqttConnectOptions();
         options.setUserName(username);

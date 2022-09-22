@@ -64,7 +64,7 @@ public class RegionController {
      */
     @GetMapping("/{regionId}")
     public RegionEntity findById(@PathVariable String regionId){
-        return regionService.getById(Long.valueOf(regionId));
+        return regionService.findById(Long.valueOf(regionId));
     }
 
     /**

@@ -10,6 +10,7 @@ import com.lkd.service.RoleService;
 import com.lkd.service.UserService;
 import com.lkd.vo.Pager;
 import com.lkd.vo.UserVO;
+import com.lkd.vo.UserWorkVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -263,5 +264,16 @@ public class UserController {
         userVO.setImage(userEntity.getImage());
 
         return userVO;
+    }
+
+    @GetMapping("/searchUserWork")
+    public Pager<UserWorkVO> searchUserWork(
+            @RequestParam Long pageIndex,
+            @RequestParam Long pageSize,
+            @RequestParam(required = false) String userName,
+            @RequestParam(required = false) Integer roleId,
+            @RequestParam(required = false) Boolean isRepair
+    ){
+        return userService.searchUserWork(pageIndex,pageSize,userName,roleId,isRepair);
     }
 }

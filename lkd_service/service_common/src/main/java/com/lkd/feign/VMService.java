@@ -12,9 +12,19 @@ import java.util.List;
 @FeignClient(value = "vm-service",fallbackFactory = VmServiceFallbackFactory.class)
 public interface VMService{
 
+    /**
+     * 获取售货机信息
+     * @param innerCode
+     * @return
+     */
     @GetMapping("/vm/info/{innerCode}")
     VmVO getVMInfo(@PathVariable String innerCode);
 
+    /**
+     * 获取售货机商品列表
+     * @param innerCode
+     * @return
+     */
     @GetMapping("/vm/skuList/{innerCode}")
     List<SkuVO> getSkuListByInnerCode(@PathVariable String innerCode);
 
@@ -26,7 +36,12 @@ public interface VMService{
     @GetMapping("/sku/{skuId}")
     SkuVO getSku(@PathVariable String skuId);
 
-
+    /**
+     * 售货机商品是否还有库存
+     * @param innerCode
+     * @param skuId
+     * @return
+     */
     @GetMapping("/vm/hasCapacity/{innerCode}/{skuId}")
     Boolean hasCapacity(@PathVariable String innerCode,@PathVariable Long skuId);
 
